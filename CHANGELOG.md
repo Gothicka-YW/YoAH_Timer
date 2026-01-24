@@ -1,5 +1,10 @@
 # Changelog — YoAH Timer (Manual Only)
 
+## 0.2.4 — 2026-01-24
+- Moved Remote Alerts into a new Settings tab (popup)
+- Mirrored tabbed layout in Side Panel (Current Bids / Add / History / Settings)
+- Added 5 selectable color themes (saved per-user)
+
 ## 0.2.3 — 2026-01-24
 - Added History "Clear history" button (popup + side panel)
 - Added optional Remote Alerts (per-user) via ntfy (push) or IFTTT Webhooks (email/SMS via applet)

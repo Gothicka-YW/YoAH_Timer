@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "YoAH Timer (Manual Only)",
-  "version": "0.2.2",
+  "version": "0.2.4",
   "description": "Personal reminders for auction end times. Alerts 10 minutes before an auction ends. Manual entry only.",
   "action": {
     "default_popup": "popup.html",
