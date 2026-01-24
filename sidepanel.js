@@ -16,6 +16,7 @@ function loadSettings(){
     chrome.storage.sync.get([SETTINGS_KEY], (res)=>{
       const s = res[SETTINGS_KEY] || {};
       resolve({
+        theme: (s.theme === 'purple' || s.theme === 'blue' || s.theme === 'rose' || s.theme === 'amber') ? s.theme : 'teal',
         remoteEnabled: !!s.remoteEnabled,
         remoteProvider: s.remoteProvider === 'ifttt' ? 'ifttt' : 'ntfy',
         ntfyTopic: typeof s.ntfyTopic === 'string' ? s.ntfyTopic : '',
@@ -30,6 +31,7 @@ function saveSettings(next){
   return new Promise((resolve)=>{
     chrome.storage.sync.set({
       [SETTINGS_KEY]: {
+        theme: (next.theme === 'purple' || next.theme === 'blue' || next.theme === 'rose' || next.theme === 'amber') ? next.theme : 'teal',
         remoteEnabled: !!next.remoteEnabled,
         remoteProvider: next.remoteProvider === 'ifttt' ? 'ifttt' : 'ntfy',
         ntfyTopic: (next.ntfyTopic || '').trim(),
@@ -38,6 +40,11 @@ function saveSettings(next){
       }
     }, ()=>resolve());
   });
+}
+
+function applyTheme(theme){
+  const t = (theme === 'purple' || theme === 'blue' || theme === 'rose' || theme === 'amber') ? theme : 'teal';
+  document.documentElement.dataset.theme = t;
 }
 
 function toggleRemoteProviderUI(provider){
@@ -50,6 +57,7 @@ function toggleRemoteProviderUI(provider){
 
 function collectRemoteSettingsFromUI(){
   return {
+    theme: document.getElementById('in-theme')?.value || 'teal',
     remoteEnabled: !!document.getElementById('in-remote-enabled')?.checked,
     remoteProvider: document.getElementById('in-remote-provider')?.value === 'ifttt' ? 'ifttt' : 'ntfy',
     ntfyTopic: document.getElementById('in-ntfy-topic')?.value || '',
@@ -72,7 +80,7 @@ function saveDraft(draft){
 
 function collectDraft(){
   return {
-    activeTab: 'sidepanel',
+    activeTab: document.querySelector('.tab.is-active')?.dataset.tab || 'bids',
     form: {
       name: $("#in-name")?.value || "",
       left: $("#in-left")?.value || "",
@@ -87,6 +95,21 @@ function scheduleDraftSave(){
   draftSaveTimer = setTimeout(async ()=>{
     try{ await saveDraft(collectDraft()); }catch(e){ console.error(e); }
   }, 250);
+}
+
+function setActiveTab(tabName){
+  const tabs = Array.from(document.querySelectorAll('.tab[data-tab]'));
+  const panels = Array.from(document.querySelectorAll('[data-panel]'));
+  tabs.forEach((t) => t.classList.toggle('is-active', t.dataset.tab === tabName));
+  panels.forEach((p) => { p.hidden = p.dataset.panel !== tabName; });
+  scheduleDraftSave();
+}
+
+function wireTabs(){
+  const tabs = Array.from(document.querySelectorAll('.tab[data-tab]'));
+  tabs.forEach((t) => {
+    t.addEventListener('click', () => setActiveTab(t.dataset.tab));
+  });
 }
 
 function loadState(){
@@ -543,6 +566,8 @@ document.addEventListener('DOMContentLoaded', async()=>{
   await loadState();
   render();
 
+  wireTabs();
+
   // Remote alert settings UI
   const remoteProvider = document.getElementById('in-remote-provider');
   if(remoteProvider){
@@ -550,6 +575,19 @@ document.addEventListener('DOMContentLoaded', async()=>{
   }
 
   const saved = await loadSettings();
+
+  // Theme
+  const themeSel = document.getElementById('in-theme');
+  if(themeSel) themeSel.value = saved.theme;
+  applyTheme(saved.theme);
+  if(themeSel){
+    themeSel.addEventListener('change', async()=>{
+      const next = collectRemoteSettingsFromUI();
+      applyTheme(next.theme);
+      await saveSettings(next);
+    });
+  }
+
   const re = document.getElementById('in-remote-enabled');
   if(re) re.checked = !!saved.remoteEnabled;
   if(remoteProvider) remoteProvider.value = saved.remoteProvider;
@@ -576,6 +614,7 @@ document.addEventListener('DOMContentLoaded', async()=>{
         }
       }
       await saveSettings(next);
+      applyTheme(next.theme);
       alert('Remote settings saved.');
     });
   }
@@ -591,6 +630,8 @@ document.addEventListener('DOMContentLoaded', async()=>{
     if($("#in-enabled")) $("#in-enabled").checked = draft.form.enabled !== false;
     setImgPreview(draft.form.img || "");
   }
+
+  setActiveTab(draft?.activeTab || 'bids');
 
   const btnClear = $("#btn-clear-ended");
   if(btnClear) btnClear.addEventListener('click', clearEnded);

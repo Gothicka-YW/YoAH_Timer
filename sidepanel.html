@@ -20,7 +20,14 @@
     <button id="btn-clear-ended" class="danger">Clear ended</button>
   </header>
 
-  <section class="card">
+  <nav class="tabs" aria-label="YoAH Timer Tabs">
+    <button class="tab is-active" type="button" data-tab="bids">Current Bids</button>
+    <button class="tab" type="button" data-tab="add">Add Auction</button>
+    <button class="tab" type="button" data-tab="history">History</button>
+    <button class="tab" type="button" data-tab="settings">Settings</button>
+  </nav>
+
+  <section class="card" id="panel-add" data-panel="add" hidden>
     <h2>Add auction (manual)</h2>
 
     <div class="form-row">
@@ -52,11 +59,11 @@
     </div>
   </section>
 
-  <section class="card">
+  <section class="card" id="panel-bids" data-panel="bids">
     <div id="list" class="list"></div>
   </section>
 
-  <section class="card">
+  <section class="card" id="panel-history" data-panel="history" hidden>
     <div class="list-header">
       <h2>History</h2>
       <button id="btn-clear-history" class="danger" type="button">Clear history</button>
@@ -64,9 +71,31 @@
     <div id="history-list" class="list"></div>
   </section>
 
-  <section class="card">
+  <section class="card" id="panel-settings" data-panel="settings" hidden>
     <div class="list-header">
       <h2>Remote alerts</h2>
+    </div>
+    <div class="form-row">
+      <div class="list-header">
+        <h2>Theme</h2>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <label>Color theme</label>
+      <select id="in-theme">
+        <option value="teal">Teal (default)</option>
+        <option value="purple">Purple</option>
+        <option value="blue">Blue</option>
+        <option value="rose">Rose</option>
+        <option value="amber">Amber</option>
+      </select>
+    </div>
+
+    <div class="form-row">
+      <div class="list-header">
+        <h2>Remote alerts</h2>
+      </div>
     </div>
     <div class="hint">Optional: send alerts to your phone/email via ntfy or IFTTT. Settings are per-user.</div>
 

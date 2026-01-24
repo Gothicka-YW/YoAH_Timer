@@ -13,6 +13,46 @@
 	--pillText:#e5e7eb;
 }
 
+:root[data-theme="teal"]{
+	--primary:#14b8a6;
+	--bg:#0b1220;
+	--surface:#0f172a;
+	--surface2:#111c33;
+	--border:#22304a;
+}
+
+:root[data-theme="purple"]{
+	--primary:#a78bfa;
+	--bg:#0d1024;
+	--surface:#141732;
+	--surface2:#1a1f3f;
+	--border:#2a2f57;
+}
+
+:root[data-theme="blue"]{
+	--primary:#38bdf8;
+	--bg:#071524;
+	--surface:#0b1d33;
+	--surface2:#0f2742;
+	--border:#1f3a5a;
+}
+
+:root[data-theme="rose"]{
+	--primary:#fb7185;
+	--bg:#1b0b14;
+	--surface:#24101c;
+	--surface2:#2f1423;
+	--border:#4a2036;
+}
+
+:root[data-theme="amber"]{
+	--primary:#fbbf24;
+	--bg:#161106;
+	--surface:#1f1708;
+	--surface2:#2a1f0b;
+	--border:#4b3a16;
+}
+
 body{margin:0;font-family:system-ui,-apple-system,Segoe UI,sans-serif;font-size:12.5px;color:var(--text);background:var(--bg);width:420px}
 .header{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:10px;border-bottom:1px solid var(--border);background:var(--bg)}
 .header h1{margin:0;font-size:15px}

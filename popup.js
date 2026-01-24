@@ -14,6 +14,7 @@ function loadSettings(){
     chrome.storage.sync.get([SETTINGS_KEY], (res)=>{
       const s = res[SETTINGS_KEY] || {};
       resolve({
+        theme: (s.theme === 'purple' || s.theme === 'blue' || s.theme === 'rose' || s.theme === 'amber') ? s.theme : 'teal',
         remoteEnabled: !!s.remoteEnabled,
         remoteProvider: s.remoteProvider === 'ifttt' ? 'ifttt' : 'ntfy',
         ntfyTopic: typeof s.ntfyTopic === 'string' ? s.ntfyTopic : '',
@@ -28,6 +29,7 @@ function saveSettings(next){
   return new Promise((resolve)=>{
     chrome.storage.sync.set({
       [SETTINGS_KEY]: {
+        theme: (next.theme === 'purple' || next.theme === 'blue' || next.theme === 'rose' || next.theme === 'amber') ? next.theme : 'teal',
         remoteEnabled: !!next.remoteEnabled,
         remoteProvider: next.remoteProvider === 'ifttt' ? 'ifttt' : 'ntfy',
         ntfyTopic: (next.ntfyTopic || '').trim(),
@@ -36,6 +38,11 @@ function saveSettings(next){
       }
     }, ()=>resolve());
   });
+}
+
+function applyTheme(theme){
+  const t = (theme === 'purple' || theme === 'blue' || theme === 'rose' || theme === 'amber') ? theme : 'teal';
+  document.documentElement.dataset.theme = t;
 }
 
 function toggleRemoteProviderUI(provider){
@@ -48,6 +55,7 @@ function toggleRemoteProviderUI(provider){
 
 function collectRemoteSettingsFromUI(){
   return {
+    theme: document.getElementById('in-theme')?.value || 'teal',
     remoteEnabled: !!document.getElementById('in-remote-enabled')?.checked,
     remoteProvider: document.getElementById('in-remote-provider')?.value === 'ifttt' ? 'ifttt' : 'ntfy',
     ntfyTopic: document.getElementById('in-ntfy-topic')?.value || '',
@@ -509,6 +517,19 @@ document.addEventListener("DOMContentLoaded", async()=>{
   }
 
   const saved = await loadSettings();
+
+  // Theme
+  const themeSel = document.getElementById('in-theme');
+  if(themeSel) themeSel.value = saved.theme;
+  applyTheme(saved.theme);
+  if(themeSel){
+    themeSel.addEventListener('change', async()=>{
+      const next = collectRemoteSettingsFromUI();
+      applyTheme(next.theme);
+      await saveSettings(next);
+    });
+  }
+
   const re = document.getElementById('in-remote-enabled');
   if(re) re.checked = !!saved.remoteEnabled;
   if(remoteProvider) remoteProvider.value = saved.remoteProvider;
@@ -536,6 +557,7 @@ document.addEventListener("DOMContentLoaded", async()=>{
         }
       }
       await saveSettings(next);
+      applyTheme(next.theme);
       alert('Remote settings saved.');
     });
   }
