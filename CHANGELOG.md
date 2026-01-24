@@ -1,0 +1,16 @@
+# Changelog — YoAH Timer (Manual Only)
+
+## 0.2.2 — 2026-01-23
+- Added Side Panel data entry (no need to open the popup)
+- Added History tracking with Won/Lost and optional win amount
+- Added automatic history retention (removes entries older than 30 days)
+- Added notification Snooze button (5 minutes)
+- Added item image “Find” via `api.yoworld.info` (fills YoWorld CDN image URL)
+- Added dark theme with teal primary
+- Updated manifest + notification icon wiring
+
+## 0.2.1 — 2026-01-22
+- Manual-only timer MVP
+- Tabbed popup UI (Current Bids / Add Auction)
+- Time Left input (H:MM) with persistent storage
+- Optional item image URL with preview

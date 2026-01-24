@@ -1,0 +1,72 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>YoAH Timer — Current Bids</title>
+  <link rel="stylesheet" href="popup.css">
+  <style>
+    body{width:auto}
+    .header{position:sticky; top:0; z-index:5}
+    .header h1{font-size:14px}
+    .card{border-bottom:none}
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div>
+      <h1>Current Bids</h1>
+      <div class="sub">Live countdown while this panel is open.</div>
+    </div>
+    <button id="btn-clear-ended" class="danger">Clear ended</button>
+  </header>
+
+  <section class="card">
+    <h2>Add auction (manual)</h2>
+
+    <div class="form-row">
+      <label>Item name</label>
+      <input id="in-name" type="text" placeholder="e.g., Blaze Hair (Black)">
+    </div>
+
+    <div class="form-row">
+      <label>Time Left (H:MM)</label>
+      <input id="in-left" type="text" inputmode="numeric" placeholder="e.g., 2:15 or 0:45">
+    </div>
+
+    <div class="form-row">
+      <label>Item image (optional)</label>
+      <div class="inline">
+        <input id="in-img" type="url" placeholder="Paste yoworld.info item link or direct image URL">
+        <button id="btn-img" type="button">Load</button>
+        <button id="btn-img-find" type="button">Find</button>
+        <button id="btn-img-clear" type="button">Clear</button>
+      </div>
+      <div class="img-preview-wrap">
+        <img id="img-preview" class="img-preview" alt="Item preview" />
+      </div>
+    </div>
+
+    <div class="form-row inline">
+      <label class="chk"><input id="in-enabled" type="checkbox" checked> Enable reminder</label>
+      <button id="btn-add" class="primary" type="button">Add</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <div id="list" class="list"></div>
+  </section>
+
+  <section class="card">
+    <div class="list-header">
+      <h2>History</h2>
+    </div>
+    <div id="history-list" class="list"></div>
+  </section>
+
+  <footer class="footer">
+    <div class="small">Alarms fire even if this panel is closed.</div>
+  </footer>
+
+  <script src="sidepanel.js"></script>
+</body>
+</html>

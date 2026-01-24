@@ -1,0 +1,84 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>YoAH Timer</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header class="header">
+    <div>
+      <h1>YoAH Timer</h1>
+      <div class="sub">Alerts you 10 minutes before auction end.</div>
+    </div>
+    <div class="inline">
+      <button id="btn-open-panel" type="button">Open Side Panel</button>
+      <button id="btn-refresh">Refresh</button>
+    </div>
+  </header>
+
+  <nav class="tabs" aria-label="YoAH Timer Tabs">
+    <button class="tab is-active" type="button" data-tab="bids">Current Bids</button>
+    <button class="tab" type="button" data-tab="add">Add Auction</button>
+    <button class="tab" type="button" data-tab="history">History</button>
+  </nav>
+
+  <section class="card" id="panel-add" data-panel="add" hidden>
+    <h2>Add auction (manual)</h2>
+    <div class="form-row">
+      <label>Item name</label>
+      <input id="in-name" type="text" placeholder="e.g., Blaze Hair (Black)">
+    </div>
+
+    <div class="form-row">
+      <label>Time Left (H:MM)</label>
+      <input id="in-left" type="text" inputmode="numeric" placeholder="e.g., 2:15 or 0:45">
+      <div class="hint">Enter how much time is remaining. This extension does not read or hook YoWorld pages.</div>
+    </div>
+
+    <div class="form-row">
+      <label>Item image (optional)</label>
+      <div class="inline">
+        <input id="in-img" type="url" placeholder="Paste yoworld.info item link or direct image URL">
+        <button id="btn-img" type="button">Load</button>
+        <button id="btn-img-find" type="button">Find</button>
+        <button id="btn-img-clear" type="button">Clear</button>
+      </div>
+      <div class="hint">Paste a yoworld.info item page link and click Load (uses the page’s OG image), or paste a direct image URL.</div>
+      <div class="img-preview-wrap">
+        <img id="img-preview" class="img-preview" alt="Item preview" />
+      </div>
+    </div>
+
+    <div class="form-row inline">
+      <label class="chk"><input id="in-enabled" type="checkbox" checked> Enable reminder</label>
+      <button id="btn-add" class="primary">Add</button>
+    </div>
+
+    <div class="form-row inline">
+      <button id="btn-test">Test notification</button>
+      <button id="btn-clear-ended" class="danger">Clear ended</button>
+    </div>
+  </section>
+
+  <section class="card" id="panel-bids" data-panel="bids">
+    <div class="list-header">
+      <h2>Current Bids</h2>
+    </div>
+    <div id="list" class="list"></div>
+  </section>
+
+  <section class="card" id="panel-history" data-panel="history" hidden>
+    <div class="list-header">
+      <h2>History</h2>
+    </div>
+    <div id="history-list" class="list"></div>
+  </section>
+
+  <footer class="footer">
+    <div class="small">Notification-only. No bidding or automation.</div>
+  </footer>
+
+  <script src="popup.js"></script>
+</body>
+</html>

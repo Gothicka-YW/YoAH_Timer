@@ -1,0 +1,39 @@
+{
+  "manifest_version": 3,
+  "name": "YoAH Timer (Manual Only)",
+  "version": "0.2.2",
+  "description": "Personal reminders for auction end times. Alerts 10 minutes before an auction ends. Manual entry only.",
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "YoAH Timer",
+    "default_icon": {
+      "16": "icons/16x16.png",
+      "32": "icons/32x32.png",
+      "48": "icons/48x48.png",
+      "128": "icons/128x128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/16x16.png",
+    "32": "icons/32x32.png",
+    "48": "icons/48x48.png",
+    "128": "icons/128x128.png"
+  },
+  "permissions": [
+    "storage",
+    "alarms",
+    "sidePanel",
+    "notifications"
+  ],
+  "host_permissions": [
+    "https://yoworld.info/*",
+    "https://www.yoworld.info/*",
+    "https://api.yoworld.info/*"
+  ],
+  "background": {
+    "service_worker": "sw.js"
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  }
+}
