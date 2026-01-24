@@ -1,5 +1,10 @@
 # Changelog — YoAH Timer (Manual Only)
 
+## 0.2.3 — 2026-01-24
+- Added History "Clear history" button (popup + side panel)
+- Added optional Remote Alerts (per-user) via ntfy (push) or IFTTT Webhooks (email/SMS via applet)
+- Added Remote Alerts test button + settings saved in `chrome.storage.sync`
+
 ## 0.2.2 — 2026-01-23
 - Added Side Panel data entry (no need to open the popup)
 - Added History tracking with Won/Lost and optional win amount

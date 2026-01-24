@@ -1,5 +1,6 @@
 const STORAGE_KEY = "yoah_timer_state_v1";
 const DRAFT_KEY = "yoah_timer_draft_v1";
+const SETTINGS_KEY = "yoah_timer_settings_v1";
 const HISTORY_RETENTION_DAYS = 30;
 const HISTORY_RETENTION_MS = HISTORY_RETENTION_DAYS * 24 * 60 * 60 * 1000;
 
@@ -9,6 +10,53 @@ function el(t,c){const e=document.createElement(t); if(c) e.className=c; return 
 let state = { auctions: [], history: [] };
 
 let draftSaveTimer = null;
+
+function loadSettings(){
+  return new Promise((resolve)=>{
+    chrome.storage.sync.get([SETTINGS_KEY], (res)=>{
+      const s = res[SETTINGS_KEY] || {};
+      resolve({
+        remoteEnabled: !!s.remoteEnabled,
+        remoteProvider: s.remoteProvider === 'ifttt' ? 'ifttt' : 'ntfy',
+        ntfyTopic: typeof s.ntfyTopic === 'string' ? s.ntfyTopic : '',
+        iftttEvent: typeof s.iftttEvent === 'string' ? s.iftttEvent : 'yoah_ending',
+        iftttKey: typeof s.iftttKey === 'string' ? s.iftttKey : ''
+      });
+    });
+  });
+}
+
+function saveSettings(next){
+  return new Promise((resolve)=>{
+    chrome.storage.sync.set({
+      [SETTINGS_KEY]: {
+        remoteEnabled: !!next.remoteEnabled,
+        remoteProvider: next.remoteProvider === 'ifttt' ? 'ifttt' : 'ntfy',
+        ntfyTopic: (next.ntfyTopic || '').trim(),
+        iftttEvent: (next.iftttEvent || '').trim(),
+        iftttKey: (next.iftttKey || '').trim()
+      }
+    }, ()=>resolve());
+  });
+}
+
+function toggleRemoteProviderUI(provider){
+  const p = provider === 'ifttt' ? 'ifttt' : 'ntfy';
+  const ntfy = document.getElementById('remote-ntfy');
+  const ifttt = document.getElementById('remote-ifttt');
+  if(ntfy) ntfy.hidden = (p !== 'ntfy');
+  if(ifttt) ifttt.hidden = (p !== 'ifttt');
+}
+
+function collectRemoteSettingsFromUI(){
+  return {
+    remoteEnabled: !!document.getElementById('in-remote-enabled')?.checked,
+    remoteProvider: document.getElementById('in-remote-provider')?.value === 'ifttt' ? 'ifttt' : 'ntfy',
+    ntfyTopic: document.getElementById('in-ntfy-topic')?.value || '',
+    iftttEvent: document.getElementById('in-ifttt-event')?.value || '',
+    iftttKey: document.getElementById('in-ifttt-key')?.value || ''
+  };
+}
 
 function loadDraft(){
   return new Promise((resolve)=>{
@@ -473,9 +521,67 @@ async function clearEnded(){
   alert(`Removed ${before-after} ended item(s).`);
 }
 
+async function clearHistory(){
+  const count = (state.history || []).length;
+  if(!count){
+    alert('History is already empty.');
+    return;
+  }
+  if(!confirm(`Clear ${count} history item(s)? This cannot be undone.`)) return;
+  state.history = [];
+  await saveState();
+  render();
+}
+
+async function testRemote(){
+  const res = await chrome.runtime.sendMessage({type:"YOAH_TEST_REMOTE"});
+  if(res?.ok) alert('Remote alert sent (check your phone/email).');
+  else alert(res?.error || 'Remote alert failed. Check settings.');
+}
+
 document.addEventListener('DOMContentLoaded', async()=>{
   await loadState();
   render();
+
+  // Remote alert settings UI
+  const remoteProvider = document.getElementById('in-remote-provider');
+  if(remoteProvider){
+    remoteProvider.addEventListener('change', ()=>toggleRemoteProviderUI(remoteProvider.value));
+  }
+
+  const saved = await loadSettings();
+  const re = document.getElementById('in-remote-enabled');
+  if(re) re.checked = !!saved.remoteEnabled;
+  if(remoteProvider) remoteProvider.value = saved.remoteProvider;
+  const nt = document.getElementById('in-ntfy-topic');
+  if(nt) nt.value = saved.ntfyTopic;
+  const ie = document.getElementById('in-ifttt-event');
+  if(ie) ie.value = saved.iftttEvent;
+  const ik = document.getElementById('in-ifttt-key');
+  if(ik) ik.value = saved.iftttKey;
+  toggleRemoteProviderUI(saved.remoteProvider);
+
+  const btnSaveRemote = document.getElementById('btn-save-remote');
+  if(btnSaveRemote){
+    btnSaveRemote.addEventListener('click', async()=>{
+      const next = collectRemoteSettingsFromUI();
+      if(next.remoteEnabled){
+        if(next.remoteProvider === 'ntfy' && !String(next.ntfyTopic).trim()){
+          alert('Enter an ntfy topic (or disable remote alerts).');
+          return;
+        }
+        if(next.remoteProvider === 'ifttt' && (!String(next.iftttEvent).trim() || !String(next.iftttKey).trim())){
+          alert('Enter both IFTTT event name and key (or disable remote alerts).');
+          return;
+        }
+      }
+      await saveSettings(next);
+      alert('Remote settings saved.');
+    });
+  }
+
+  const btnTestRemote = document.getElementById('btn-test-remote');
+  if(btnTestRemote) btnTestRemote.addEventListener('click', testRemote);
 
   const draft = await loadDraft();
   if(draft?.form){
@@ -488,6 +594,9 @@ document.addEventListener('DOMContentLoaded', async()=>{
 
   const btnClear = $("#btn-clear-ended");
   if(btnClear) btnClear.addEventListener('click', clearEnded);
+
+  const btnClearHistory = $("#btn-clear-history");
+  if(btnClearHistory) btnClearHistory.addEventListener('click', clearHistory);
 
   const btnAdd = $("#btn-add");
   if(btnAdd) btnAdd.addEventListener('click', addAuction);

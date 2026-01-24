@@ -28,7 +28,9 @@
   "host_permissions": [
     "https://yoworld.info/*",
     "https://www.yoworld.info/*",
-    "https://api.yoworld.info/*"
+    "https://api.yoworld.info/*",
+    "https://ntfy.sh/*",
+    "https://maker.ifttt.com/*"
   ],
   "background": {
     "service_worker": "sw.js"

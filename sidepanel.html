@@ -59,8 +59,46 @@
   <section class="card">
     <div class="list-header">
       <h2>History</h2>
+      <button id="btn-clear-history" class="danger" type="button">Clear history</button>
     </div>
     <div id="history-list" class="list"></div>
+  </section>
+
+  <section class="card">
+    <div class="list-header">
+      <h2>Remote alerts</h2>
+    </div>
+    <div class="hint">Optional: send alerts to your phone/email via ntfy or IFTTT. Settings are per-user.</div>
+
+    <div class="form-row">
+      <label class="chk"><input id="in-remote-enabled" type="checkbox"> Enable remote alerts</label>
+    </div>
+
+    <div class="form-row">
+      <label>Provider</label>
+      <select id="in-remote-provider">
+        <option value="ntfy">ntfy (push to phone)</option>
+        <option value="ifttt">IFTTT Webhooks (email/SMS via applet)</option>
+      </select>
+    </div>
+
+    <div id="remote-ntfy" class="form-row">
+      <label>ntfy topic</label>
+      <input id="in-ntfy-topic" type="text" placeholder="e.g., yoah_timer_jane_123">
+      <div class="hint">Subscribe to this topic in the ntfy app.</div>
+    </div>
+
+    <div id="remote-ifttt" class="form-row" hidden>
+      <label>IFTTT event name</label>
+      <input id="in-ifttt-event" type="text" placeholder="e.g., yoah_ending">
+      <label style="margin-top:8px">IFTTT key</label>
+      <input id="in-ifttt-key" type="password" placeholder="Your Webhooks key">
+    </div>
+
+    <div class="form-row inline">
+      <button id="btn-test-remote" type="button">Test remote alert</button>
+      <button id="btn-save-remote" class="primary" type="button">Save remote settings</button>
+    </div>
   </section>
 
   <footer class="footer">

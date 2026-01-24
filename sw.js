@@ -1,4 +1,5 @@
 const STORAGE_KEY="yoah_timer_state_v1";
+const SETTINGS_KEY="yoah_timer_settings_v1";
 const ALARM_PREFIX="yoah_auc_";
 const SNOOZE_PREFIX="yoah_snooze_";
 const NOTIF_PREFIX="yoah_auc_";
@@ -6,6 +7,50 @@ const SNOOZE_MS = 5 * 60 * 1000;
 
 function loadState(){return new Promise(r=>chrome.storage.local.get([STORAGE_KEY],res=>r(res[STORAGE_KEY]||{auctions:[]})));}
 function saveState(s){return new Promise(r=>chrome.storage.local.set({[STORAGE_KEY]:s},()=>r()));}
+
+function loadSettings(){
+  return new Promise((resolve)=>{
+    chrome.storage.sync.get([SETTINGS_KEY], (res)=>{
+      const s = res[SETTINGS_KEY] || {};
+      resolve({
+        remoteEnabled: !!s.remoteEnabled,
+        remoteProvider: s.remoteProvider === 'ifttt' ? 'ifttt' : 'ntfy',
+        ntfyTopic: typeof s.ntfyTopic === 'string' ? s.ntfyTopic.trim() : '',
+        iftttEvent: typeof s.iftttEvent === 'string' ? s.iftttEvent.trim() : 'yoah_ending',
+        iftttKey: typeof s.iftttKey === 'string' ? s.iftttKey.trim() : ''
+      });
+    });
+  });
+}
+
+async function sendRemoteAlert(title, message){
+  try{
+    const s = await loadSettings();
+    if(!s.remoteEnabled) return { ok: false, skipped: true, reason: 'disabled' };
+
+    if(s.remoteProvider === 'ifttt'){
+      if(!s.iftttEvent || !s.iftttKey) return { ok: false, error: 'IFTTT not configured' };
+      const url = `https://maker.ifttt.com/trigger/${encodeURIComponent(s.iftttEvent)}/with/key/${encodeURIComponent(s.iftttKey)}?value1=${encodeURIComponent(title)}&value2=${encodeURIComponent(message)}`;
+      await fetch(url, { method: 'GET', mode: 'no-cors', cache: 'no-store' });
+      return { ok: true };
+    }
+
+    // ntfy (default)
+    if(!s.ntfyTopic) return { ok: false, error: 'ntfy not configured' };
+    const url = `https://ntfy.sh/${encodeURIComponent(s.ntfyTopic)}?title=${encodeURIComponent(title)}`;
+    await fetch(url, {
+      method: 'POST',
+      mode: 'no-cors',
+      cache: 'no-store',
+      headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+      body: message
+    });
+    return { ok: true };
+  }catch(e){
+    console.error('Remote alert failed', e);
+    return { ok: false, error: 'Remote alert failed' };
+  }
+}
 
 function clearAllAlarms(){
   return new Promise(resolve=>{
@@ -44,12 +89,22 @@ function notifyAuction(auc, { snoozed } = { snoozed: false }){
     message,
     buttons: [{ title: "Snooze 5m" }]
   });
+
+  // Fire-and-forget: also try to deliver remotely (phone/email) if configured.
+  sendRemoteAlert(title, message);
 }
 
 chrome.runtime.onMessage.addListener((msg,sender,sendResponse)=>{
   (async()=>{
     if(msg?.type==="YOAH_RESCHEDULE"){ await reschedule(); sendResponse({ok:true}); return; }
     if(msg?.type==="YOAH_TEST_NOTIFY"){ chrome.notifications.create({ type:"basic", iconUrl:"icons/128x128.png", title:"YoAH Timer", message:"Test notification. Your reminders are working." }); sendResponse({ok:true}); return; }
+    if(msg?.type==="YOAH_TEST_REMOTE"){
+      const res = await sendRemoteAlert('YoAH Timer remote test', `Remote alerts are working. ${new Date().toLocaleString()}`);
+      if(res?.ok) sendResponse({ok:true});
+      else if(res?.skipped) sendResponse({ok:false, error:'Remote alerts are disabled.'});
+      else sendResponse({ok:false, error: res?.error || 'Remote alert failed.'});
+      return;
+    }
     sendResponse({ok:false});
   })();
   return true;

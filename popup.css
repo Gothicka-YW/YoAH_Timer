@@ -29,7 +29,7 @@ button:hover{background:var(--surface2)}
 .card h2{margin:0 0 8px 0;font-size:13px}
 .form-row{margin-bottom:8px}
 .form-row label{display:block;margin-bottom:3px;color:var(--text)}
-input,textarea{width:100%;padding:6px;border:1px solid var(--border);border-radius:6px;font-size:12px;background:var(--surface);color:var(--text)}
+input,textarea,select{width:100%;padding:6px;border:1px solid var(--border);border-radius:6px;font-size:12px;background:var(--surface);color:var(--text)}
 input::placeholder,textarea::placeholder{color:color-mix(in srgb, var(--muted) 80%, transparent)}
 .hint{margin-top:4px;color:var(--muted);font-size:11px}
 .inline{display:flex;gap:8px;align-items:center}
