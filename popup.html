@@ -21,6 +21,7 @@
     <button class="tab is-active" type="button" data-tab="bids">Current Bids</button>
     <button class="tab" type="button" data-tab="add">Add Auction</button>
     <button class="tab" type="button" data-tab="history">History</button>
+    <button class="tab" type="button" data-tab="search">Search</button>
     <button class="tab" type="button" data-tab="settings">Settings</button>
   </nav>
 
@@ -75,6 +76,23 @@
       <button id="btn-clear-history" class="danger" type="button">Clear history</button>
     </div>
     <div id="history-list" class="list"></div>
+  </section>
+
+  <section class="card" id="panel-search" data-panel="search" hidden>
+    <div class="list-header">
+      <h2>Search</h2>
+    </div>
+
+    <div class="form-row">
+      <label>Add keyword</label>
+      <div class="inline">
+        <input id="in-search-word" type="text" placeholder="e.g., halo" autocomplete="off" />
+        <button id="btn-search-add" class="primary" type="button">Add</button>
+      </div>
+      <div class="hint">Click Copy to copy a word, then paste into the Auction House search.</div>
+    </div>
+
+    <div id="search-words-list" class="list"></div>
   </section>
 
   <section class="card" id="panel-settings" data-panel="settings" hidden>

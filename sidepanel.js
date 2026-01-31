@@ -1,6 +1,80 @@
 const STORAGE_KEY = "yoah_timer_state_v1";
 const DRAFT_KEY = "yoah_timer_draft_v1";
 const SETTINGS_KEY = "yoah_timer_settings_v1";
+const SEARCH_WORDS_KEY = "yoah_timer_search_words_v1";
+
+// Default Auction House search keywords (user-customizable).
+// If nothing is saved yet, this list will be used to initialize storage.
+const DEFAULT_SEARCH_WORDS = [
+  'african',
+  'ancient rome',
+  'angela',
+  'australia',
+  'beverly hills',
+  'canadian',
+  'carnival',
+  'casablanca',
+  'city of love',
+  'cocoa ville',
+  'cocoaville',
+  'cropped hair',
+  'desert island',
+  'diamonds',
+  'disco',
+  'elf',
+  'emo glam',
+  'enchanting china',
+  'fairytale fantasy',
+  'fashion',
+  'flapper',
+  'good vs evil',
+  'groovy',
+  'halloween',
+  'heroes',
+  'high school',
+  'jumba',
+  'kentucky',
+  'kraze',
+  'legends',
+  'lionell',
+  'mafia II',
+  'martina',
+  'mcfly',
+  'medieval fantasy',
+  'megan',
+  'miami',
+  'miniature park',
+  'mississippi',
+  'monaco',
+  'moroccan',
+  'musketeers',
+  'new years',
+  'nomi',
+  'NYC',
+  'oneeye',
+  'pixie',
+  'playhouse',
+  'rainforest',
+  'rami',
+  'restaurant',
+  'romantic updo',
+  'royal india',
+  'russian circus',
+  'sleek hair',
+  'sincity',
+  'snowville',
+  'soso',
+  'space glam',
+  'steampunk',
+  'underwater witch',
+  'valentines',
+  'vday swept',
+  'vegas',
+  'white house',
+  'wild west',
+  'xmas',
+  'yoair'
+];
 const HISTORY_RETENTION_DAYS = 30;
 const HISTORY_RETENTION_MS = HISTORY_RETENTION_DAYS * 24 * 60 * 60 * 1000;
 
@@ -8,6 +82,8 @@ function $(s){return document.querySelector(s);}
 function el(t,c){const e=document.createElement(t); if(c) e.className=c; return e;}
 
 let state = { auctions: [], history: [] };
+
+let searchWords = [];
 
 let draftSaveTimer = null;
 
@@ -70,6 +146,127 @@ function loadDraft(){
   return new Promise((resolve)=>{
     chrome.storage.local.get([DRAFT_KEY], (res)=>resolve(res[DRAFT_KEY]||null));
   });
+}
+
+function normalizeSearchWords(words){
+  const list = Array.isArray(words) ? words : [];
+  const out = [];
+  const seen = new Set();
+  for(const w of list){
+    if(typeof w !== 'string') continue;
+    const trimmed = w.trim();
+    if(!trimmed) continue;
+    const key = trimmed.toLowerCase();
+    if(seen.has(key)) continue;
+    seen.add(key);
+    out.push(trimmed);
+  }
+  out.sort((a,b)=>String(a).localeCompare(String(b), undefined, { sensitivity: 'base', numeric: true }));
+  return out;
+}
+
+function loadSearchWords(){
+  return new Promise((resolve)=>{
+    chrome.storage.sync.get([SEARCH_WORDS_KEY], (res)=>{
+      const saved = res[SEARCH_WORDS_KEY];
+      const defaults = normalizeSearchWords(DEFAULT_SEARCH_WORDS);
+
+      if(Array.isArray(saved)){
+        const normalizedSaved = normalizeSearchWords(saved);
+        // If the user already has values, keep them. If it's empty and defaults exist, seed defaults.
+        if(normalizedSaved.length || !defaults.length){
+          resolve(normalizedSaved);
+          return;
+        }
+      }
+
+      chrome.storage.sync.set({ [SEARCH_WORDS_KEY]: defaults }, ()=>resolve(defaults));
+    });
+  });
+}
+
+function saveSearchWords(words){
+  const normalized = normalizeSearchWords(words);
+  return new Promise((resolve)=>{
+    chrome.storage.sync.set({ [SEARCH_WORDS_KEY]: normalized }, ()=>resolve(normalized));
+  });
+}
+
+async function copyToClipboard(text){
+  const value = String(text ?? '');
+  try{
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      await navigator.clipboard.writeText(value);
+      return true;
+    }
+  }catch{}
+
+  try{
+    const ta = document.createElement('textarea');
+    ta.value = value;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    ta.style.top = '0';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    const ok = document.execCommand('copy');
+    document.body.removeChild(ta);
+    return !!ok;
+  }catch{
+    return false;
+  }
+}
+
+function renderSearchWords(){
+  const list = document.getElementById('search-words-list');
+  if(!list) return;
+  list.innerHTML = '';
+
+  if(!Array.isArray(searchWords) || !searchWords.length){
+    const d = el('div', 'small');
+    d.textContent = 'No search keywords yet. Add some above.';
+    list.appendChild(d);
+    return;
+  }
+
+  searchWords.forEach((word, idx)=>{
+    const item = el('div', 'item');
+    const row = el('div', 'keyword-row');
+    const text = el('div', 'keyword-text');
+    text.textContent = word;
+
+    const actions = el('div', 'actions actions-tight');
+    const btnCopy = el('button', '');
+    btnCopy.type = 'button';
+    btnCopy.textContent = 'Copy';
+    btnCopy.dataset.action = 'copy';
+    btnCopy.dataset.index = String(idx);
+
+    const btnRemove = el('button', 'danger');
+    btnRemove.type = 'button';
+    btnRemove.textContent = 'Remove';
+    btnRemove.dataset.action = 'remove';
+    btnRemove.dataset.index = String(idx);
+
+    actions.appendChild(btnCopy);
+    actions.appendChild(btnRemove);
+    row.appendChild(text);
+    row.appendChild(actions);
+    item.appendChild(row);
+    list.appendChild(item);
+  });
+}
+
+async function addSearchWordFromUI(){
+  const inp = document.getElementById('in-search-word');
+  if(!inp) return;
+  const word = (inp.value || '').trim();
+  if(!word) return;
+  searchWords = await saveSearchWords([...(searchWords || []), word]);
+  inp.value = '';
+  renderSearchWords();
 }
 
 function saveDraft(draft){
@@ -567,6 +764,44 @@ document.addEventListener('DOMContentLoaded', async()=>{
   render();
 
   wireTabs();
+
+  // Search keywords
+  searchWords = await loadSearchWords();
+  renderSearchWords();
+  const btnSearchAdd = document.getElementById('btn-search-add');
+  if(btnSearchAdd) btnSearchAdd.addEventListener('click', addSearchWordFromUI);
+  const inSearchWord = document.getElementById('in-search-word');
+  if(inSearchWord){
+    inSearchWord.addEventListener('keydown', (e)=>{
+      if(e.key === 'Enter'){
+        e.preventDefault();
+        addSearchWordFromUI();
+      }
+    });
+  }
+  const searchWordsList = document.getElementById('search-words-list');
+  if(searchWordsList){
+    searchWordsList.addEventListener('click', async(e)=>{
+      const btn = e.target && e.target.closest ? e.target.closest('button[data-action][data-index]') : null;
+      if(!btn) return;
+      const idx = Number(btn.dataset.index);
+      if(!Number.isFinite(idx) || idx < 0 || idx >= (searchWords || []).length) return;
+      const action = btn.dataset.action;
+      if(action === 'copy'){
+        const ok = await copyToClipboard(searchWords[idx]);
+        const prev = btn.textContent;
+        btn.textContent = ok ? 'Copied' : 'Copy failed';
+        setTimeout(()=>{ btn.textContent = prev; }, 900);
+        return;
+      }
+      if(action === 'remove'){
+        const next = [...(searchWords || [])];
+        next.splice(idx, 1);
+        searchWords = await saveSearchWords(next);
+        renderSearchWords();
+      }
+    });
+  }
 
   // Remote alert settings UI
   const remoteProvider = document.getElementById('in-remote-provider');

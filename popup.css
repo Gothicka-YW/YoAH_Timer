@@ -86,6 +86,9 @@ input::placeholder,textarea::placeholder{color:color-mix(in srgb, var(--muted) 8
 .item-meta{color:var(--muted);font-size:11px;margin-top:3px}
 .pill{display:inline-block;padding:2px 6px;border-radius:10px;background:var(--pill);color:var(--pillText);font-size:10px;margin-right:4px;border:1px solid var(--border)}
 .actions{display:flex;gap:6px;margin-top:6px}
+.actions-tight{margin-top:0}
+.keyword-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.keyword-text{font-weight:600;word-break:break-word}
 .small{font-size:11px;color:var(--muted);padding:8px 10px}
 .footer{padding:8px 10px}
 
