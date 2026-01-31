@@ -61,6 +61,8 @@ Notes:
 - Remote alert settings are stored in `chrome.storage.sync`.
 - Remote alerts (if enabled) send the item name and end time to the selected provider.
 
+See the full policy in `PRIVACY_POLICY.md`.
+
 ## Troubleshooting
 
 - Remote test says disabled: enable remote alerts and save settings.

@@ -1,5 +1,11 @@
 # Changelog — YoAH Timer (Manual Only)
 
+## 0.2.5 — 2026-01-31
+- Added new Search tab before Settings (popup + side panel)
+- Added Auction House search keyword list with Copy / Add / Remove
+- Keyword list is saved in `chrome.storage.sync` and kept alphabetized
+- Added privacy policy document (`PRIVACY_POLICY.md`)
+
 ## 0.2.4 — 2026-01-24
 - Moved Remote Alerts into a new Settings tab (popup)
 - Mirrored tabbed layout in Side Panel (Current Bids / Add / History / Settings)
